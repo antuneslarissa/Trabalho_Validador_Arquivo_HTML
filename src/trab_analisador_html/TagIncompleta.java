@@ -9,6 +9,6 @@ public class TagIncompleta extends Tag{
 	}
 
 	public int getLinha() {
-		return 0;
+		return linha;
 	}
 }

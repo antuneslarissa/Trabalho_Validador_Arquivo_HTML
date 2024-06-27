@@ -9,10 +9,10 @@ public class TagCompleta extends Tag{
 	}
 	
 	public int getQuantidade() {
-		return 0;
+		return quantidade;
 	}
 	
 	public void setQuantidade(int qtd) {
-		
+		this.quantidade = qtd;
 	}
 }
