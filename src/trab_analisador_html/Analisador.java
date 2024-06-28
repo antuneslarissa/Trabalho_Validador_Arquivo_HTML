@@ -4,86 +4,82 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
+
 public class Analisador {
 
     private File arquivo;
+    private ListaEncadeada listaTagsFechadas;
     private PilhaLista pilhaTagsAbertas;
-    private ListaEncadeada listaTagsEncontradas
 
-    public Analisador(File arquivo) {
+    public Analisador(File arquivo, ListaEncadeada listaTags) {
         this.arquivo = arquivo;
-        pilha = new PilhaLista();
+        listaTagsFechadas = listaTags;
+        pilhaTagsAbertas = new PilhaLista();
     }
 
-    public void analisarArquivo() throws FileNotFoundException {
+    public String analisarArquivo() throws FileNotFoundException {
         Scanner scan = new Scanner(arquivo);
-        int numLinha = 0;
-        
+        // Percorre o arquivo
         while (scan.hasNextLine()) {
-            numLinha++;
-            String linha = scan.nextLine();
-            if (!linha.equals("")) {
-                acharTags(linha, numLinha);
-                acharFechaTags(linha);
+            String linha = scan.nextLine().trim();
+            //Pula linhas vazias; analisa linhas n√£o vazias;
+            if (!linha.isEmpty()) {
+                String wrongCloseTag = acharTags(linha);
+                if (!wrongCloseTag.isEmpty()) {
+                    return wrongCloseTag;
+                }
             }
         }
+        return null;
     }
 
-    private void acharTags(String linha, int numLinha) {
-        int indexInicioTag = -1;
-        int indexFimTag = -1;
-        boolean retiraTag = false;
-        
+    private String acharTags(String linha) {
         // Procura por abre tag '<'
         for (int i = 0; i < linha.length(); i++) {
             if (linha.charAt(i) == '<') {
-                indexInicioTag = i + 1;
-                retiraTag = false;
-                
                 // Procura por fecha tag '>'
-                for (int j = i; j < linha.length(); j++) {
-                    
-                    // Verifica se h· '/' apÛs o '<'
-                    if (j == (i + 1) && linha.charAt(j) == '/') {
-                        retiraTag = true;
-                        indexInicioTag++;
+                for (int j = i; j < linha.length() && linha.charAt(j) != '>'; j++) {
+                    // Pega a tag formatada sem atributos
+                    String tag = linha.substring(i + 1, j).split(" ")[0].toLowerCase();
+                    // Verifica se ha '/' apos o '<'
+                    if (!tag.startsWith("/")) {
+                        pilhaTagsAbertas.push(tag);
+                        return null;
                     }
-                    if (linha.charAt(j) == '>') {
-                        indexFimTag = j;
-                        
-                        String tag = linha.substring(indexInicioTag, indexFimTag);
-                        tag = formatarTag(tag);
-                        if (!retiraTag) {
-                            guardarTagAberta(tag, numLinha);
+                    else {
+                        // Remove "/"
+                        tag = tag.substring(1);
+                        if (pilhaTagsAbertasEstaVazia() || !pilhaTagsAbertas.peek().equals(tag)) {
+                            return tag;
                         }
-                        else {
-                            retirarTag(tag);
-                        }
-                        break;
+                        pilhaTagsAbertas.pop();
+                        addTagNaLista(tag);
                     }
                 }
             }
         }
+        return null;
     }
     
-    // Retira eventuais atributos da tag
-    private String formatarTag(String tag) {
-        int fimTag = tag.length();
-        for (int i = 0; i < tag.length(); i++) {
-            if (tag.charAt(i) == ' ') {
-                fimTag = i;
-                break;
+    private void addTagNaLista(String tag) {
+        for (int i = 0; i < listaTagsFechadas.obterComprimento(); i++) {
+            Tag currentTag = (Tag) listaTagsFechadas.obterNo(i).getInfo();
+            if (currentTag.getNome().equals(tag)) {
+                currentTag.incrementQuantidade();
+                return;
             }
         }
-        return tag.substring(0, fimTag);
+        listaTagsFechadas.inserir(new Tag(tag));
+    }
+
+    public boolean pilhaTagsAbertasEstaVazia() {
+        return pilhaTagsAbertas.estaVazia();
     }
     
-    private void guardarTagAberta(String tag, int numLinha) {
-        TagIncompleta novaTag = new TagIncompleta(tag, numLinha);
-        pilhaTagsAbertas.push(novaTag);
-    }
-    
-    private void retirarTag(String tag) {
-        
+    public PilhaLista getPilhaTagsAbertas() {
+        return pilhaTagsAbertas;
     }
 }

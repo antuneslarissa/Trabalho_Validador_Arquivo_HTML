@@ -1,17 +1,16 @@
 package trab_analisador_html;
 
-
 public class PilhaLista<T> implements Pilha<T> {
-    
+
     private ListaEncadeada<T> listaPilha;
-        
+
     @SuppressWarnings("unchecked")
     public PilhaLista() {
         this.listaPilha = new ListaEncadeada();
     }
 
     @Override
-    public void push(T info) throws PilhaCheiaException {
+    public void push(T info) {
         this.listaPilha.inserir(info);
     }
 
@@ -20,10 +19,10 @@ public class PilhaLista<T> implements Pilha<T> {
         if (listaPilha.estaVazia()) {
             throw new PilhaVaziaException();
         }
-        
+
         T valor = peek();
         this.listaPilha.retirar(valor);
-        
+
         return valor;
     }
 
@@ -46,9 +45,8 @@ public class PilhaLista<T> implements Pilha<T> {
             this.pop();
         }
     }
-    
+
     public ListaEncadeada<T> getLista() {
         return this.listaPilha;
     }
-	    
 }

@@ -1,111 +1,103 @@
 package trab_analisador_html;
 
-public class ListaEncadeada <T> {
-	private NoLista<T> primeiro;
+public class ListaEncadeada<T> {
 
-	public ListaEncadeada() {
-		this.primeiro = null;
-	}
+    private NoLista<T> primeiro;
 
-	public NoLista<T> getPrimeiro() {
-		return this.primeiro;
-	}
+    public ListaEncadeada() {
+        this.primeiro = null;
+    }
 
-	public void inserir(T info) {
-		NoLista<T> novoNo = new NoLista<T>();
-		novoNo.setInfo(info);
-		novoNo.setProximo(this.primeiro);
-		this.primeiro = novoNo;
-	}
+    public NoLista<T> getPrimeiro() {
+        return this.primeiro;
+    }
 
-	public boolean estaVazia() {
-		return primeiro == null;
-	}
+    public void inserir(T info) {
+        NoLista<T> novoNo = new NoLista<T>();
+        novoNo.setInfo(info);
+        novoNo.setProximo(this.primeiro);
+        this.primeiro = novoNo;
+    }
 
-	public NoLista<T> buscar(T info) {
-		NoLista<T> no = getPrimeiro();
+    public boolean estaVazia() {
+        return primeiro == null;
+    }
 
-		while (no != null) {
-			if (no.getInfo().equals(info)) {
-				return no;
-			}
-			no = no.getProximo();
-		}
-		return null;
-	}
+    public NoLista<T> buscar(T info) {
+        NoLista<T> no = getPrimeiro();
+        while (no != null) {
+            if (no.getInfo().equals(info)) {
+                return no;
+            }
+            no = no.getProximo();
+        }
+        return null;
+    }
 
-	public void retirar(T info) {
-		if (primeiro.getInfo() == info) {
-			primeiro = primeiro.getProximo();
-			return;
-		}
+    public void retirar(T info) {
+        if (primeiro.getInfo() == info) {
+            primeiro = primeiro.getProximo();
+            return;
+        }
+        NoLista<T> no = primeiro;
+        while (no != null) {
+            NoLista<T> proximo = no.getProximo();
+            if (proximo != null) {
+                if (proximo.getInfo() == info) {
+                    no.setProximo(proximo.getProximo());
+                }
+            }
+            no = no.getProximo();
+        }
+    }
 
-		NoLista<T> no = primeiro;
+    public int obterComprimento() {
+        NoLista<T> no = getPrimeiro();
+        int tamanho = 0;
+        while (no != null) {
+            tamanho++;
+            no = no.getProximo();
+        }
+        return tamanho;
+    }
 
-		while (no != null) {
+    public NoLista<T> obterNo(int idx) {
+        NoLista<T> no = primeiro;
+        int posicao = 0;
+        while (no != null) {
+            if (posicao == idx) {
+                return no;
+            }
+            posicao++;
+            no = no.getProximo();
+        }
+        throw new IndexOutOfBoundsException();
+    }
 
-			NoLista<T> proximo = no.getProximo();
+    // Método para liberar a memória dos nós da lista
+    public void liberar() {
+        NoLista<T> atual = primeiro;
 
-			if (proximo != null) {
-				if (proximo.getInfo() == info) {
+        while (atual != null) {
+            NoLista<T> proximo = atual.getProximo();
+            atual.setProximo(null);
+            atual = proximo;
+        }
 
-					no.setProximo(proximo.getProximo());
-				}
-			}
-			no = no.getProximo();
-		}
-	}
+        primeiro = null;
+    }
 
-	public int obterComprimento() {
-		NoLista<T> no = getPrimeiro();
-		int tamanho = 0;
-
-		while (no != null) {
-			tamanho++;
-			no = no.getProximo();
-		}
-		return tamanho;
-	}
-
-	public NoLista<T> obterNo(int idx) {
-		NoLista<T> no = primeiro;
-		int posicao = 0;
-		while (no != null) {
-			if (posicao == idx) {
-				return no;
-			}
-			posicao++;
-			no = no.getProximo();
-		}
-		throw new IndexOutOfBoundsException();
-	}
-
-	// Método para liberar a memória dos nós da lista
-	public void liberar() {
-		NoLista<T> atual = primeiro;
-
-		while (atual != null) {
-			NoLista<T> proximo = atual.getProximo();
-			atual.setProximo(null);
-			atual = proximo;
-		}
-
-		primeiro = null;
-	}
-
-	@Override
-	public String toString() {
-		String lista = "";
-		NoLista<T> no = getPrimeiro();
-
-		while (no != null) {
-			if (no != getPrimeiro())
-				lista += ", ";
-
-			lista += no.getInfo().toString();
-			no = no.getProximo();
-		}
-
-		return lista;
-	}
+    @Override
+    public String toString() {
+        String r = "";
+        if (!estaVazia()) {
+            NoLista<T> currentNo = primeiro;
+            while (currentNo.getProximo() != null) {
+                r += (String) currentNo.getInfo().toString() + ",";
+                currentNo = currentNo.getProximo();
+            }
+            r += (String) currentNo.getInfo().toString();
+        }
+        return r;
+    }
 }
