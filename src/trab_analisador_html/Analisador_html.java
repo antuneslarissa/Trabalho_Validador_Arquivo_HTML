@@ -1,3 +1,4 @@
+
 package trab_analisador_html;
 
 import java.awt.EventQueue;
@@ -10,13 +11,11 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.JScrollPane;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.util.HashMap;
-import java.util.Map;
-import javax.swing.JPanel;
-import java.awt.Label;
-import java.awt.ScrollPane;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.FileNotFoundException;
+import javax.swing.JFileChooser;
 import javax.swing.JTextPane;
 
 public class Analisador_html {
@@ -25,7 +24,8 @@ public class Analisador_html {
     private JTextField textField;
     private JTable table;
     private DefaultTableModel tableModel;
-
+    private ListaEncadeada listaTagsFechadas;
+    private JTextPane textPane;
     /**
      * Launch the application.
      */
@@ -46,6 +46,7 @@ public class Analisador_html {
      * Create the application.
      */
     public Analisador_html() {
+        listaTagsFechadas = new ListaEncadeada();
         initialize();
     }
 
@@ -58,10 +59,26 @@ public class Analisador_html {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.getContentPane().setLayout(null);
 
+        JLabel label = new JLabel("Arquivo:");
+        label.setBounds(10, 14, 59, 14);
+        frame.getContentPane().add(label);
+
         textField = new JTextField();
         textField.setBounds(72, 11, 254, 20);
         frame.getContentPane().add(textField);
         textField.setColumns(10);
+
+        textField.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                JFileChooser fileChooser = new JFileChooser();
+                int returnValue = fileChooser.showOpenDialog(null);
+                if (returnValue == JFileChooser.APPROVE_OPTION) {
+                    File selectedFile = fileChooser.getSelectedFile();
+                    textField.setText(selectedFile.getAbsolutePath());
+                }
+            }
+        });
 
         JButton btnAnalisar = new JButton("Analisar");
         btnAnalisar.addActionListener(new ActionListener() {
@@ -82,40 +99,43 @@ public class Analisador_html {
         );
         table = new JTable(tableModel);
         scrollPane.setViewportView(table);
-        
-        Label label = new Label("Arquivo:");
-        label.setBounds(10, 10, 59, 21);
-        frame.getContentPane().add(label);
-        
-        JTextPane textPane = new JTextPane();
+
+        textPane = new JTextPane();
         textPane.setBounds(10, 41, 415, 101);
         frame.getContentPane().add(textPane);
+        textPane.setText(null);
     }
 
     private void analisarArquivo() {
         String caminhoArquivo = textField.getText();
-        Map<String, Integer> tagCount = new HashMap<>();
+        File arquivo = new File(caminhoArquivo);
 
-        try (BufferedReader br = new BufferedReader(new FileReader(caminhoArquivo))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] tags = line.split("<|>");
-                for (String tag : tags) {
-                    if (!tag.trim().isEmpty() && !tag.startsWith("/")) {
-                        tagCount.put(tag, tagCount.getOrDefault(tag, 0) + 1);
-                    }
-                }
+        if (!arquivo.exists()) {
+        	
+        	textPane.setText("Arquivo não encontrado.");
+            return;
+        }
+
+        Analisador analisador = new Analisador(arquivo, listaTagsFechadas);
+
+        try {
+            String resultado = analisador.analisarArquivo();
+            if (resultado != null) {
+            	textPane.setText(resultado);
             }
 
             // Limpa a tabela antes de adicionar novas linhas
             tableModel.setRowCount(0);
 
-            for (Map.Entry<String, Integer> entry : tagCount.entrySet()) {
-                tableModel.addRow(new Object[]{entry.getKey(), entry.getValue()});
+            for (int i = 0; i < listaTagsFechadas.obterComprimento(); i++) {
+                Tag tag = (Tag) listaTagsFechadas.obterNo(i).getInfo();
+                tableModel.addRow(new Object[]{tag.getNome(), tag.getQuantidade()});
             }
 
-        } catch (Exception e) {
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+        
+        listaTagsFechadas.liberar();
     }
 }
