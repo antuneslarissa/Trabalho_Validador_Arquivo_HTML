@@ -31,6 +31,9 @@ public class Analisador {
                 }
             }
         }
+        if(!getPilhaTagsAbertas().estaVazia()) {
+        	return "Faltam tags: " + getPilhaTagsAbertas().getLista().toString() + ".";
+        }
         return "O arquivo está bem formatado.";
     }
 
@@ -44,6 +47,10 @@ public class Analisador {
                     if (linha.charAt(j) == '>') { // Encontrou o caractere '>'
                         // Pega a tag formatada sem atributos
                         String tag = linha.substring(i + 1, j).split(" ")[0].toLowerCase();
+                        if (this.isSingleton(tag)) {
+                        	addTagNaLista(tag);
+                        	break;
+                        }
                         if (!tag.startsWith("/")) { // Verifica se não é uma tag de fechamento
                             pilhaTagsAbertas.push(tag); // Empilha a tag de abertura
                         } else {
@@ -83,5 +90,21 @@ public class Analisador {
     // Retorna a pilha de tags abertas
     public PilhaLista getPilhaTagsAbertas() {
         return pilhaTagsAbertas;
+    }
+    
+    public boolean isSingleton(String tag) {
+    	return tag.equalsIgnoreCase("meta") ||
+    			tag.equalsIgnoreCase("base") ||
+    			tag.equalsIgnoreCase("br") ||
+    			tag.equalsIgnoreCase("col") ||
+    			tag.equalsIgnoreCase("command") ||
+    			tag.equalsIgnoreCase("embed") ||
+    			tag.equalsIgnoreCase("hr") ||
+    			tag.equalsIgnoreCase("img") ||
+    			tag.equalsIgnoreCase("input") ||
+    			tag.equalsIgnoreCase("link") ||
+    			tag.equalsIgnoreCase("param") ||
+    			tag.equalsIgnoreCase("source") ||
+    			tag.equalsIgnoreCase("!DOCTYPE");
     }
 }
